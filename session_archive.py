@@ -1689,6 +1689,52 @@ def enrich_artifacts(artifacts, project_path, tool_calls=None, base_commit=None,
         enriched.append(item)
     return enriched
 
+_ARTIFACT_ACTION_PRIORITY = {
+    "read": 0,
+    "modified": 30,
+    "moved": 40,
+    "moved_from": 40,
+    "moved_to": 40,
+    "created": 50,
+    "deleted": 60,
+}
+
+def _artifact_action_priority(action):
+    return _ARTIFACT_ACTION_PRIORITY.get(action or "", 10)
+
+def _merge_artifact_records(existing, incoming):
+    merged = dict(existing)
+
+    if _artifact_action_priority(incoming.get("action")) >= _artifact_action_priority(existing.get("action")):
+        merged["action"] = incoming.get("action")
+
+    merged["is_code"] = int(bool(existing.get("is_code")) or bool(incoming.get("is_code")))
+    merged["is_doc"] = int(bool(existing.get("is_doc")) or bool(incoming.get("is_doc")))
+
+    for key in ("content", "diff", "diff_source"):
+        if incoming.get(key) and (not merged.get(key) or len(str(incoming.get(key))) > len(str(merged.get(key)))):
+            merged[key] = incoming.get(key)
+
+    return merged
+
+def collapse_artifacts_by_path(artifacts):
+    if not artifacts:
+        return []
+
+    collapsed = {}
+    order = []
+    for artifact in artifacts:
+        path = artifact.get("file_path")
+        if not path:
+            continue
+        if path not in collapsed:
+            collapsed[path] = dict(artifact)
+            order.append(path)
+            continue
+        collapsed[path] = _merge_artifact_records(collapsed[path], artifact)
+
+    return [collapsed[path] for path in order]
+
 # Patterns that indicate a meta/administrative assistant message (archiving, deploy status, etc.)
 # These should be skipped when selecting the "outcome" message for summary.
 _OUTCOME_SKIP_PATTERNS = [
@@ -1846,13 +1892,15 @@ def build_metadata(parsed, summary_override=None, model_override=None, cwd_overr
         "raw_jsonl_path": parsed.get("jsonl_path"),
         "tags": tags,
         "tasks": tasks,
-        "artifacts": enrich_artifacts(
-            parsed.get("artifacts", []),
-            project_path,
-            tool_calls=parsed.get("tool_calls", []),
-            base_commit=parsed.get("base_commit"),
-            read_snapshots=parsed.get("read_snapshots", {}),
-            tool_errors=parsed.get("tool_errors", {}),
+        "artifacts": collapse_artifacts_by_path(
+            enrich_artifacts(
+                parsed.get("artifacts", []),
+                project_path,
+                tool_calls=parsed.get("tool_calls", []),
+                base_commit=parsed.get("base_commit"),
+                read_snapshots=parsed.get("read_snapshots", {}),
+                tool_errors=parsed.get("tool_errors", {}),
+            )
         ),
         "events": parsed.get("events", []),
         "open_issues": open_issues,

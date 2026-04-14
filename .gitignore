@@ -1,4 +1,11 @@
 data/sessions.db
+data/session_archive.db
+data/archive.db
+data/.archive.lock
 data/exports/
 __pycache__/
 *.pyc
+*.backup.*.py
+BUGS.md
+docs/5. unsorted/
+.claude/

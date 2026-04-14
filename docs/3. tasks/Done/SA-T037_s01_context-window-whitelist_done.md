@@ -1,5 +1,6 @@
 **Дата:** 2026-04-03
-**Статус:** draft
+**Статус:** done
+**Дата завершения:** 2026-04-03
 **Спецификация:** [docs/2. specifications/SA-S01_context-window-whitelist.md](../2.%20specifications/SA-S01_context-window-whitelist.md)
 
 # SA-T037_s01_context-window-whitelist — Whitelist tool_call_ids из контекста для session boundary

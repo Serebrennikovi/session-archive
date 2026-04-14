@@ -1,7 +1,7 @@
 # Спецификация: Context-Window Whitelist для session boundary
 
 **ID:** SA-S01
-**Статус:** draft
+**Статус:** done
 **Версия:** 1.0
 **Дата:** 2026-04-03
 
@@ -168,5 +168,5 @@ def parse_claude_jsonl(jsonl_path, tool_id_whitelist=None):
 
 - Архитектура: [SA-architecture.md](../SA-architecture.md)
 - Зависит от: нет
-- Задача реализации: [SA-T037](../3.%20tasks/SA-T037_s01_context-window-whitelist.md)
+- Задача реализации: [SA-T037](../3.%20tasks/Done/SA-T037_s01_context-window-whitelist_done.md)
 - Затрагивает баги: BUG-JSONL-CROSS-SESSION-REGRESSION, BUG-ARTIFACT-INCOMPLETE (частично), BUG-TASKS-FROM-PREV-SESSION, BUG-TAGS-WRONG-SKILL (частично)
